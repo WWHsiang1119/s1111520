@@ -17,17 +17,23 @@ def fetch_data():
         # 解析 XML
         root = ET.fromstring(xml_data)
 
-        # 將其轉為list
+        # 將其轉為 list
         data_list = []
-        for item in root.findall('.//'):
-            if item.text and item.text.strip():
-                data_list.append({item.tag: item.text.strip()})
+
+        for road in root.findall('textQueryRoad'):
+            # 將同一筆資料的欄位組合在同一個字典中
+            road_info = {
+                "name": road.findtext('name'),
+                "townCode": road.findtext('townCode'),
+                "townName": road.findtext('townName')
+            }
+            data_list.append(road_info)
 
         # 儲存成 JSON
         with open("road_data.json", "w", encoding="utf-8") as f:
             json.dump(data_list, f, ensure_ascii=False, indent=4)
 
-        print("XML 資料已成功轉換並儲存至 road_data.json")
+        print(f"成功擷取 {len(data_list)} 筆資料並儲存至 road_data.json")
 
     except Exception as e:
         print(f"發生錯誤：{e}")

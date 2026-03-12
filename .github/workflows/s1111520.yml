@@ -1,0 +1,29 @@
+name: Docker API Scraper Workflow
+
+on:
+  schedule:
+    - cron: '30 13 * * *'  # 每天台灣時間 21:30 執行
+  workflow_dispatch:      # 支援手動觸發
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: docker build -t my-api-scraper .
+
+      - name: Run Container and Get Data
+        run: |
+          docker run --name scraper-container my-api-scraper
+          docker cp scraper-container:/app/road_data.json ./road_data.json
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add road_data.json
+          git commit -m "Auto-update road data via Docker" || exit 0
+          git push
